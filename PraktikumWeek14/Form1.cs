@@ -26,6 +26,7 @@ namespace PraktikumWeek14
         public string sqlQuery;
         DataTable dtTypePemain = new DataTable();
         int posisiPemain = 0;
+        int penentuKapten;
         
 
         private void Form1_Load(object sender, EventArgs e)
@@ -34,8 +35,28 @@ namespace PraktikumWeek14
             sqlCommand = new MySqlCommand(sqlQuery, sqlConnect);
             sqlAdapter = new MySqlDataAdapter(sqlCommand);
             sqlAdapter.Fill(dtTypePemain);
+
+            sqlQuery = "select team_name, team_id from team group by 1;";
+            sqlCommand = new MySqlCommand(sqlQuery, sqlConnect);
+            sqlAdapter = new MySqlDataAdapter(sqlCommand);
+            DataTable dtNamaTeam= new DataTable();
+            sqlAdapter.Fill(dtNamaTeam);
+
+            sqlQuery = "select nation, nationality_id from nationality group by 1;";
+            sqlCommand = new MySqlCommand(sqlQuery, sqlConnect);
+            sqlAdapter = new MySqlDataAdapter(sqlCommand);
+            DataTable dtNamaNegara = new DataTable();
+            sqlAdapter.Fill(dtNamaNegara);
+
+            cbNationality.DataSource = dtNamaNegara;
+            cbNationality.DisplayMember = "nation";
+            cbNationality.ValueMember = "nationality_id";
+            cbTeam.DataSource = dtNamaTeam;
+            cbTeam.DisplayMember = "team_name";
+            cbTeam.ValueMember = "team_id";
             isiDataPemain(0);
-            labelAvail.Text = "Available";
+            labelAvail.Text = "Not Available";
+            Kapten();
         }
         public void isiDataPemain(int Posisi)
         {
@@ -51,6 +72,7 @@ namespace PraktikumWeek14
         {
             isiDataPemain(0);
             posisiPemain = 0;
+            Kapten();
         }
 
         private void btnBack_Click(object sender, EventArgs e)
@@ -62,12 +84,14 @@ namespace PraktikumWeek14
             else
                 isiDataPemain(posisiPemain - 1);
             posisiPemain--;
+            Kapten();
         }
 
         private void btnKanan_Click(object sender, EventArgs e)
         {
             isiDataPemain(dtTypePemain.Rows.Count - 1);
             posisiPemain = dtTypePemain.Rows.Count - 1;
+            Kapten();
         }
 
         private void btnNext_Click(object sender, EventArgs e)
@@ -79,14 +103,40 @@ namespace PraktikumWeek14
             else
                 isiDataPemain(posisiPemain + 1);
             posisiPemain++;
+            Kapten();
         }
 
+        private void Kapten()
+        {
+            sqlQuery = "select p.player_name from player p, team t where t.captain_id = p.player_id and t.team_id = '"+cbTeam.SelectedValue.ToString()+"' having p.player_name = '"+tbNama.Text+"';";
+            sqlCommand = new MySqlCommand(sqlQuery, sqlConnect);
+            sqlAdapter = new MySqlDataAdapter(sqlCommand);
+            DataTable dtCaptain = new DataTable();
+            sqlAdapter.Fill(dtCaptain);
+            if (dtCaptain.Rows.Count == 0)
+            {
+                labelKapten.Text = "Bukan Kapten";
+                penentuKapten = 1;
+            }
+            else
+            {
+                labelKapten.Text = "Kapten";
+                penentuKapten = 2;
+            }
+        }
         private void btnSave_Click(object sender, EventArgs e)
         {
             sqlConnect.Open();
             if (labelAvail.Text == "Available")
             {
-                sqlQuery = "update player p, team t, nationality n set p.player_name = '" + tbNama.Text + "', p.birthdate = '" + dtpLahir.Value.ToString("yyyyMMdd") + "', n.nation = '" + cbNationality.Text + "', t.team_name = '" + cbTeam.Text + "', p.team_number = '" + nudNumber.Value + "' where p.player_id = '" + tbId.Text + "';";
+                Kapten();
+                if (penentuKapten == 2)
+                {
+                    sqlQuery = "update team set captain_id = (select p.player_id from player p, team t where p.team_id = t.team_id and t.team_id = '"+cbTeam.SelectedValue.ToString()+"' order by timestampdiff(year, p.birthdate, curdate()) desc limit 1) where team.team_id = '"+cbTeam.SelectedValue.ToString()+"';";
+                    sqlCommand = new MySqlCommand(sqlQuery, sqlConnect);
+                    sqlCommand.ExecuteNonQuery();
+                }
+                sqlQuery = "update player p set p.player_name = '" + tbNama.Text + "', p.birthdate = '" + dtpLahir.Value.ToString("yyyyMMdd") + "', p.nationality_id = '" + cbNationality.SelectedValue.ToString() + "', p.team_id = '" + cbTeam.SelectedValue.ToString() + "', p.team_number = '" + nudNumber.Value + "' where p.player_id = '" + tbId.Text + "';";
                 sqlCommand = new MySqlCommand(sqlQuery, sqlConnect);
                 sqlCommand.ExecuteNonQuery();
             }
@@ -104,7 +154,7 @@ namespace PraktikumWeek14
 
         private void nudNumber_ValueChanged(object sender, EventArgs e)
         {
-            string sqlQuery = "select p.player_name as Name,p.team_number as Number from team t,player p where p.team_id=t.team_id and t.team_id='" + cbTeam.Text + "' having p.team_number='" + nudNumber.Value + "';";
+            string sqlQuery = "select p.team_number from player p, team t where p.team_id = t.team_id and t.team_id = '"+cbTeam.SelectedValue.ToString()+"' group by p.team_number having p.team_number = '"+nudNumber.Value+"';";
             sqlCommand = new MySqlCommand(sqlQuery, sqlConnect);
             sqlAdapter = new MySqlDataAdapter(sqlCommand);
             DataTable dtNumber = new DataTable();
@@ -121,7 +171,19 @@ namespace PraktikumWeek14
 
         private void cbTeam_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            string sqlQuery = "select p.team_number from player p, team t where p.team_id = t.team_id and t.team_id = '" + cbTeam.SelectedValue.ToString() + "' group by p.team_number having p.team_number = '" + nudNumber.Value + "';";
+            sqlCommand = new MySqlCommand(sqlQuery, sqlConnect);
+            sqlAdapter = new MySqlDataAdapter(sqlCommand);
+            DataTable dtNumber = new DataTable();
+            sqlAdapter.Fill(dtNumber);
+            if (dtNumber.Rows.Count == 0)
+            {
+                labelAvail.Text = "Available";
+            }
+            else
+            {
+                labelAvail.Text = "Not Available";
+            }
         }
     }
 }

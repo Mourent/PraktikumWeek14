@@ -48,6 +48,7 @@ namespace PraktikumWeek14
             this.cbNationality = new System.Windows.Forms.ComboBox();
             this.labelAvail = new System.Windows.Forms.Label();
             this.cbTeam = new System.Windows.Forms.ComboBox();
+            this.labelKapten = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.nudNumber)).BeginInit();
             this.SuspendLayout();
             // 
@@ -314,11 +315,20 @@ namespace PraktikumWeek14
             this.cbTeam.TabIndex = 60;
             this.cbTeam.SelectedIndexChanged += new System.EventHandler(this.cbTeam_SelectedIndexChanged);
             // 
+            // labelKapten
+            // 
+            this.labelKapten.AutoSize = true;
+            this.labelKapten.Location = new System.Drawing.Point(389, 86);
+            this.labelKapten.Name = "labelKapten";
+            this.labelKapten.Size = new System.Drawing.Size(0, 13);
+            this.labelKapten.TabIndex = 61;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(477, 376);
+            this.Controls.Add(this.labelKapten);
             this.Controls.Add(this.cbTeam);
             this.Controls.Add(this.labelAvail);
             this.Controls.Add(this.cbNationality);
@@ -368,6 +378,7 @@ namespace PraktikumWeek14
         private System.Windows.Forms.ComboBox cbNationality;
         private System.Windows.Forms.Label labelAvail;
         private System.Windows.Forms.ComboBox cbTeam;
+        private System.Windows.Forms.Label labelKapten;
     }
 }
 
